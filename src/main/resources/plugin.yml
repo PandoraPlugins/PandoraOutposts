@@ -1,0 +1,5 @@
+name: PandoraOutposts
+version: '${project.version}'
+main: co.pandorapvp.pandoraoutposts.PandoraOutposts
+authors: [ ProNanigans ]
+description: An outpost plugin for PandoraPVP
