@@ -24,7 +24,7 @@ public final class PandoraOutposts extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        getServer().getPluginManager().registerEvents(new RegionEvents(), this);
+        this.getServer().getPluginManager().registerEvents(new RegionEvents(), this);
         try {
             YamlGenerator.createFolder(this, "Outposts");
         } catch (IOException e) {
