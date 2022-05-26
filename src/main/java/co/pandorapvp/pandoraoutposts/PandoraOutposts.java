@@ -1,6 +1,7 @@
 package co.pandorapvp.pandoraoutposts;
 
 import co.pandorapvp.pandoraoutposts.events.RegionEvents;
+import co.pandorapvp.pandoraoutposts.types.OutpostTypes;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -37,22 +38,26 @@ public final class PandoraOutposts extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        outpostFlag = registerFlag("is-outpost", OutpostTypes.NORMAL.label);
+    }
 
+    private Flag<?> registerFlag(final String flagName, final String defaultVal){
         final FlagRegistry flagRegistry = worldGuardPlugin.getFlagRegistry();
+        Flag<?> flag = null;
         try{
-            final StringFlag isOutpostFlag = new StringFlag("is-outpost", "true");
+            final StringFlag isOutpostFlag = new StringFlag(flagName, defaultVal);
             flagRegistry.register(isOutpostFlag);
-            outpostFlag = flagRegistry.get("is-outpost");
+            flag = flagRegistry.get(flagName);
         }catch(FlagConflictException e){
             e.printStackTrace();
-            Flag<?> existing = flagRegistry.get("is-outpost");
+            Flag<?> existing = flagRegistry.get(flagName);
             if(existing instanceof StateFlag){
-                outpostFlag = existing;
+                flag = existing;
             }else{
-                Bukkit.getConsoleSender().sendMessage(ChatColor.BOLD+""+ChatColor.RED+"Getting this error is bad news for the OUTPOST plugin, something is conflicing with the 'is-outpost' flag in worldguard");
+                Bukkit.getConsoleSender().sendMessage(ChatColor.BOLD+""+ChatColor.RED+"Getting this error is bad news for the OUTPOST plugin, something is conflicting with the "+ flagName +" flag in worldguard");
             }
         }
-
+        return flag;
     }
 
     public WorldGuardPlugin getWorldGuard(){

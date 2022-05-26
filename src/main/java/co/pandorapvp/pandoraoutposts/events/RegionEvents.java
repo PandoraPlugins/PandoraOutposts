@@ -25,9 +25,9 @@ public class RegionEvents implements Listener {
     public void onRegionEnter(RegionEnterEvent event) {
 
         final ProtectedRegion region = event.getRegion();
-        final String containsFlagStr = (String) region.getFlag(outposts.outpostFlag);
-        boolean containsFlag = Optional.of(Boolean.parseBoolean(containsFlagStr)).orElse(false);
-        if (containsFlag) {
+        final String outpostType = (String) region.getFlag(outposts.outpostFlag);
+
+        if (outpostType != null) {//todo: figure out raiding outposts
 
             final Player player = event.getPlayer();
             final String name = region.getId();
