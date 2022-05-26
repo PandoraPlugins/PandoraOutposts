@@ -5,8 +5,12 @@ import co.pandorapvp.pandoraoutposts.bossbars.BossBar;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBarManager;
 import com.mewin.WGRegionEvents.events.RegionEnterEvent;
 import com.mewin.WGRegionEvents.events.RegionLeaveEvent;
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,13 +32,13 @@ public class RegionEvents implements Listener {
             final Player player = event.getPlayer();
             final String name = region.getId();
             try{
-                final BossBar newBar = BossBarManager.createNewBar(name, player.getLocation(), 100, "Outpost 1");
+                final Location centerOfRegion = getCenterOfRegion(region, player.getWorld()).subtract(0, 100, 0);
+                final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 1");
                 newBar.addPlayerToBar(player);
             }catch(KeyAlreadyExistsException err){
                 final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
                 bossBar.addPlayerToBar(player);
             }
-
 
         }
     }
@@ -47,10 +51,16 @@ public class RegionEvents implements Listener {
 
         if(containsFlag){
             final String name = region.getId();
-            System.out.println("name = " + name);
             BossBarManager.getBossBarMap().get(name).removeBarForPlayer(event.getPlayer());
         }
 
+    }
+
+    public static Location getCenterOfRegion(ProtectedRegion region, World world){
+        final com.sk89q.worldedit.BlockVector maximumPoint = region.getMaximumPoint();
+        final BlockVector minimumPoint = region.getMinimumPoint();
+        final Vector centerLoc = maximumPoint.subtract(minimumPoint).divide(2).add(minimumPoint);
+        return new Location(world, centerLoc.getX(), centerLoc.getY(), centerLoc.getZ());
     }
 
 }
