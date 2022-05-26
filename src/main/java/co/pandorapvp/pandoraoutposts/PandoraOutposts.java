@@ -7,6 +7,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.nanigans.libnanigans.Files.YamlGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,11 +15,12 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.Map;
 
 public final class PandoraOutposts extends JavaPlugin {
 
     public WorldGuardPlugin worldGuardPlugin = getWorldGuard();
-    public Flag outpostFlag;
+    public Flag<?> outpostFlag;
     public YamlGenerator outPostYaml = new YamlGenerator(this, "Outposts/outPostYaml.yml");
 
     @Override
@@ -40,6 +42,7 @@ public final class PandoraOutposts extends JavaPlugin {
         try{
             final StringFlag isOutpostFlag = new StringFlag("is-outpost", "true");
             flagRegistry.register(isOutpostFlag);
+            outpostFlag = flagRegistry.get("is-outpost");
         }catch(FlagConflictException e){
             e.printStackTrace();
             Flag<?> existing = flagRegistry.get("is-outpost");
@@ -56,6 +59,15 @@ public final class PandoraOutposts extends JavaPlugin {
         Plugin plugin = this.getServer().getPluginManager().getPlugin("WorldGuard");
         if(!(plugin instanceof WorldGuardPlugin)) return null;
         return (WorldGuardPlugin) plugin;
+    }
+
+    public static boolean regionContainsFlag(ProtectedRegion region, String name) {
+        for (Map.Entry<Flag<?>, Object> flagObjectEntry : region.getFlags().entrySet()) {
+            if (flagObjectEntry.getKey().getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
