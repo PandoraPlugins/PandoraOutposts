@@ -7,15 +7,18 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class BossBar {
 
     private final Map<UUID, Player> players = new HashMap<>();
     private final EntityEnderDragon dragon;
     private final PacketPlayOutSpawnEntityLiving packet;
+    private final String name;
 
-    public BossBar(Location loc, float healthPercent, String text) {
+    public BossBar(String name, Location loc, float healthPercent, String text) {
         WorldServer world = ((CraftWorld) loc.getWorld()).getHandle();
 
         EntityEnderDragon dragon = new EntityEnderDragon(world);
@@ -41,13 +44,17 @@ public class BossBar {
         }
         this.dragon = dragon;
         this.packet = packet;
+        this.name = name;
 
     }
 
 
     public void addPlayerToBar(Player p) {
-        if(!this.players.containsKey(p.getUniqueId()))
+        final UUID uniqueId = p.getUniqueId();
+        if (!this.players.containsKey(uniqueId)) {
+            this.players.put(uniqueId, p);
             ((CraftPlayer) p).getHandle().playerConnection.sendPacket(this.packet);
+        }
     }
 
     public void removeBarForPlayer(Player p) {
@@ -55,16 +62,14 @@ public class BossBar {
             PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.dragon.getId());
             this.players.remove(p.getUniqueId());
             ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
+            if (this.players.isEmpty())
+                BossBarManager.getBossBarMap().remove(this.name);
         }
     }
 
-    public void deleteBar(){
-        this.players.forEach((id, p) -> {
-            PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.dragon.getId());
-            this.players.remove(p.getUniqueId());
-            ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
-        });
-
+    public void deleteBar() {
+        this.players.forEach((id, p) -> this.removeBarForPlayer(p));
+        BossBarManager.getBossBarMap().remove(this.name);
     }
 
 //    public static void teleportBar(Player p) {
@@ -99,7 +104,6 @@ public class BossBar {
         final PacketPlayOutEntityMetadata packet = new PacketPlayOutEntityMetadata(this.dragon.getId(), watcher, true);
         this.players.forEach((id, player) -> ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet));
     }
-
 
 
 }

@@ -4,6 +4,7 @@ import co.pandorapvp.pandoraoutposts.PandoraOutposts;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBar;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBarManager;
 import com.mewin.WGRegionEvents.events.RegionEnterEvent;
+import com.mewin.WGRegionEvents.events.RegionLeaveEvent;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.entity.Player;
@@ -21,11 +22,11 @@ public class RegionEvents implements Listener {
 
         final ProtectedRegion region = event.getRegion();
         final String containsFlagStr = (String) region.getFlag(outposts.outpostFlag);
-        Optional<Boolean> containsFlag = Optional.of(Optional.of(Boolean.parseBoolean(containsFlagStr)).orElse(false));
-        if (containsFlag.get()) {
+        boolean containsFlag = Optional.of(Boolean.parseBoolean(containsFlagStr)).orElse(false);
+        if (containsFlag) {
 
             final Player player = event.getPlayer();
-            final String name = region.getType().name();
+            final String name = region.getId();
             try{
                 final BossBar newBar = BossBarManager.createNewBar(name, player.getLocation(), 100, "Outpost 1");
                 newBar.addPlayerToBar(player);
@@ -36,6 +37,20 @@ public class RegionEvents implements Listener {
 
 
         }
+    }
+
+    @EventHandler
+    public void onRegionLeave(RegionLeaveEvent event){
+        final ProtectedRegion region = event.getRegion();
+        final String containsFlagStr = (String) region.getFlag(outposts.outpostFlag);
+         boolean containsFlag = Optional.of(Boolean.parseBoolean(containsFlagStr)).orElse(false);
+
+        if(containsFlag){
+            final String name = region.getId();
+            System.out.println("name = " + name);
+            BossBarManager.getBossBarMap().get(name).removeBarForPlayer(event.getPlayer());
+        }
+
     }
 
 }
