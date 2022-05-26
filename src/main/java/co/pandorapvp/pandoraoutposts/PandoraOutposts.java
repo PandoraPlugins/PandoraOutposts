@@ -19,6 +19,7 @@ public final class PandoraOutposts extends JavaPlugin {
 
     public WorldGuardPlugin worldGuardPlugin = getWorldGuard();
     public Flag outpostFlag;
+    public YamlGenerator outPostYaml = new YamlGenerator(this, "Outposts/outPostYaml.yml");
 
     @Override
     public void onEnable() {
@@ -29,7 +30,7 @@ public final class PandoraOutposts extends JavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN+"Pandora Outposts Loaded Successfully");
     }
 
     @Override

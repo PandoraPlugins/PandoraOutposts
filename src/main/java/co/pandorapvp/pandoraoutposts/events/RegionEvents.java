@@ -10,7 +10,7 @@ public class RegionEvents implements Listener {
     @EventHandler
     public void onRegionEnter(RegionEnterEvent event){
 
-
+        System.out.println(event.getPlayer());
 
     }
 
