@@ -105,5 +105,7 @@ public class BossBar {
         this.players.forEach((id, player) -> ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet));
     }
 
-
+    public Map<UUID, Player> getPlayers() {
+        return players;
+    }
 }

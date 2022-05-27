@@ -35,6 +35,8 @@ public class RegionEvents implements Listener {
                 final Location centerOfRegion = getCenterOfRegion(region, player.getWorld()).subtract(0, 100, 0);
                 final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 1");
                 newBar.addPlayerToBar(player);
+
+
             }catch(KeyAlreadyExistsException err){
                 final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
                 bossBar.addPlayerToBar(player);
