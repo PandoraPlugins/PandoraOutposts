@@ -46,10 +46,9 @@ public class RegionEvents implements Listener {
     @EventHandler
     public void onRegionLeave(RegionLeaveEvent event){
         final ProtectedRegion region = event.getRegion();
-        final String containsFlagStr = (String) region.getFlag(outposts.outpostFlag);
-         boolean containsFlag = Optional.of(Boolean.parseBoolean(containsFlagStr)).orElse(false);
+        final String outpostType = (String) region.getFlag(outposts.outpostFlag);
 
-        if(containsFlag){
+        if(outpostType != null){
             final String name = region.getId();
             BossBarManager.getBossBarMap().get(name).removeBarForPlayer(event.getPlayer());
         }

@@ -9,12 +9,14 @@ import com.sk89q.worldguard.protection.flags.StringFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import me.nanigans.libnanigans.Files.JsonUtil;
 import me.nanigans.libnanigans.Files.YamlGenerator;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -22,7 +24,8 @@ public final class PandoraOutposts extends JavaPlugin {
 
     public WorldGuardPlugin worldGuardPlugin = getWorldGuard();
     public Flag<?> outpostFlag;
-    public YamlGenerator outPostYaml = new YamlGenerator(this, "Outposts/outPostYaml.yml");
+    public YamlGenerator outpostYaml = new YamlGenerator(this, "outpostData.yml");
+    public JsonUtil outpostConfig = new JsonUtil(this, "config.json");
 
     @Override
     public void onEnable() {
