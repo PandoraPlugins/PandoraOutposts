@@ -7,8 +7,10 @@ import co.pandorapvp.pandoraoutposts.types.OutpostStage;
 import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.FPlayers;
 import com.massivecraft.factions.Faction;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import me.nanigans.libnanigans.Files.JsonUtil;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -31,12 +33,13 @@ public class Outpost {
         outposts.put(region.getId(), this);
     }
 
-    public void startNeutralCoutdown(){
+    public void startNeutralCountdown(){
 
         final StageTimer stageTimer = new StageTimer(this);
         final Timer timer = new Timer();
         this.runningTimer = timer;
-        timer.schedule(stageTimer, durationTillNeutral);
+        System.out.println("durationTillNeutral = " + durationTillNeutral);
+        timer.schedule(stageTimer, durationTillNeutral*100);
 
     }
 
@@ -76,12 +79,19 @@ public class Outpost {
         return bossBar;
     }
 
-    public static Outpost get(String name){
-        final Outpost outpost = outposts.get(name);
+    public static Outpost get(String regionName, World world){
+        final Outpost outpost = outposts.get(regionName);
         if(outpost != null){
             return outpost;
-        }else{
-            
+        }else {
+            final Map<String, BossBar> bossBarMap = BossBarManager.getBossBarMap();
+            final ProtectedRegion region = plugin.worldGuardPlugin.getRegionManager(world).getRegion(regionName);
+            if (ProtectedRegion.isValidId(regionName) && region != null) {
+                final Outpost outpost1 = new Outpost(region);
+                outposts.put(regionName, outpost1);
+                return outpost1;
+            }
         }
+        return null;
     }
 }

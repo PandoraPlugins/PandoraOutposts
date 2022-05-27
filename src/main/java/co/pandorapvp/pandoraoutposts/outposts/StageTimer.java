@@ -13,7 +13,9 @@ public class StageTimer extends TimerTask {
     @Override
     public void run() {
 
+        System.out.println("hello");
         this.outpost.getBossBar().updateText("Claimed");
+        this.outpost.nextStage();
 
     }
 }

@@ -3,11 +3,11 @@ package co.pandorapvp.pandoraoutposts.events;
 import co.pandorapvp.pandoraoutposts.PandoraOutposts;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBar;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBarManager;
+import co.pandorapvp.pandoraoutposts.outposts.Outpost;
 import com.mewin.WGRegionEvents.events.RegionEnterEvent;
 import com.mewin.WGRegionEvents.events.RegionLeaveEvent;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -16,7 +16,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
-import java.util.Optional;
 
 public class RegionEvents implements Listener {
     private final PandoraOutposts outposts = PandoraOutposts.getPlugin(PandoraOutposts.class);
@@ -32,10 +31,14 @@ public class RegionEvents implements Listener {
             final Player player = event.getPlayer();
             final String name = region.getId();
             try{
-                final Location centerOfRegion = getCenterOfRegion(region, player.getWorld()).subtract(0, 100, 0);
+                final World world = player.getWorld();
+                final Location centerOfRegion = getCenterOfRegion(region, world).subtract(0, 100, 0);
                 final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 1");
                 newBar.addPlayerToBar(player);
+                final Outpost outpost = Outpost.get(name, world);
 
+                if(outpost != null)
+                    outpost.startNeutralCountdown();
 
             }catch(KeyAlreadyExistsException err){
                 final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
