@@ -119,6 +119,7 @@ public class Outpost {
     }
 
     public void setState(OutpostStage state) {
+        this.bossBar.updateText(state.type);
         this.state = state;
     }
 

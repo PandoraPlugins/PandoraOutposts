@@ -33,21 +33,27 @@ public class RegionEvents implements Listener {
             final String name = region.getId();
             final World world = player.getWorld();
 
-            try{
-                final Location centerOfRegion = getCenterOfRegion(region, world).subtract(0, 100, 0);
-                final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 1");
-                newBar.addPlayerToBar(player);
-            }catch(KeyAlreadyExistsException err){
+            if (BossBarManager.getBossBarMap().containsKey(name)) {
                 final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
+                System.out.println(1);
                 bossBar.addPlayerToBar(player);
+            } else {
+                try {
+                    System.out.println(2);
+                    final Location centerOfRegion = getCenterOfRegion(region, world).subtract(0, 100, 0);
+                    final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 2");
+                    newBar.addPlayerToBar(player);
+                } catch (KeyAlreadyExistsException err) {//key exists for the boss bar already existing
+                    final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
+                    System.out.println(3);
+                    bossBar.addPlayerToBar(player);
+                }
             }
 
             final boolean playerInFaction = FPlayers.getInstance().getByPlayer(player).hasFaction();
+            if (!playerInFaction) return;
             final Outpost outpost = Outpost.get(name, world);
-            System.out.println(outpost.doesOutpostContainDiffFactionMembers());
-            if(!playerInFaction) return;
-
-            if(outpost != null){
+            if (outpost != null) {
                 outpost.startNextCountdown();
             }
 
@@ -55,11 +61,11 @@ public class RegionEvents implements Listener {
     }
 
     @EventHandler
-    public void onRegionLeave(RegionLeaveEvent event){
+    public void onRegionLeave(RegionLeaveEvent event) {
         final ProtectedRegion region = event.getRegion();
         final String outpostType = (String) region.getFlag(outposts.outpostFlag);
 
-        if(outpostType != null){
+        if (outpostType != null) {
             final String name = region.getId();
             final World world = event.getPlayer().getWorld();
             final Outpost outpost = Outpost.get(name, world);
@@ -71,7 +77,7 @@ public class RegionEvents implements Listener {
 
     }
 
-    public static Location getCenterOfRegion(ProtectedRegion region, World world){
+    public static Location getCenterOfRegion(ProtectedRegion region, World world) {
         final com.sk89q.worldedit.BlockVector maximumPoint = region.getMaximumPoint();
         final BlockVector minimumPoint = region.getMinimumPoint();
         final Vector centerLoc = maximumPoint.subtract(minimumPoint).divide(2).add(minimumPoint);

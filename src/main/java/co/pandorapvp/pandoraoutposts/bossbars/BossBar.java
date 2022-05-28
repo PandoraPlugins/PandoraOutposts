@@ -17,6 +17,7 @@ public class BossBar {
     private final Map<UUID, Player> players = new HashMap<>();
     private final EntityEnderDragon dragon;
     private final PacketPlayOutSpawnEntityLiving packet;
+    private PacketPlayOutEntityMetadata packetChange;
     private final String name;
 
     public BossBar(String name, Location loc, float healthPercent, String text) {
@@ -54,7 +55,10 @@ public class BossBar {
         final UUID uniqueId = p.getUniqueId();
         if (!this.players.containsKey(uniqueId)) {
             this.players.put(uniqueId, p);
-            ((CraftPlayer) p).getHandle().playerConnection.sendPacket(this.packet);
+            final PlayerConnection playerConnection = ((CraftPlayer) p).getHandle().playerConnection;
+            playerConnection.sendPacket(this.packet);
+            if(packetChange != null)
+                playerConnection.sendPacket(this.packetChange);
         }
     }
 
@@ -105,6 +109,7 @@ public class BossBar {
         watcher.a(3, (byte) 1);
 
         final PacketPlayOutEntityMetadata packet = new PacketPlayOutEntityMetadata(this.dragon.getId(), watcher, true);
+        this.packetChange = packet;
         this.players.forEach((id, player) -> ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet));
     }
 

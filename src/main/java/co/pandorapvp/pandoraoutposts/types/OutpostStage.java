@@ -2,7 +2,11 @@ package co.pandorapvp.pandoraoutposts.types;
 
 public enum OutpostStage {
 
-    NEUTRAL,
-    CLAIMED
+    NEUTRAL("Neutral"),
+    CLAIMED("Claimed");
 
+    public String type;
+    private OutpostStage(String type) {
+        this.type = type;
+    }
 }
