@@ -43,11 +43,12 @@ public class RegionEvents implements Listener {
             }
 
             final boolean playerInFaction = FPlayers.getInstance().getByPlayer(player).hasFaction();
+            final Outpost outpost = Outpost.get(name, world);
+            System.out.println(outpost.doesOutpostContainDiffFactionMembers());
             if(!playerInFaction) return;
 
-            final Outpost outpost = Outpost.get(name, world);
             if(outpost != null){
-                outpost.startNeutralCountdown();
+                outpost.startNextCountdown();
             }
 
         }
@@ -60,7 +61,11 @@ public class RegionEvents implements Listener {
 
         if(outpostType != null){
             final String name = region.getId();
-            System.out.println("name = " + name);
+            final World world = event.getPlayer().getWorld();
+            final Outpost outpost = Outpost.get(name, world);
+            if (outpost != null && outpost.getPlayers().size() > 0) {
+                outpost.startNextCountdown();
+            }
             BossBarManager.getBossBarMap().get(name).removeBarForPlayer(event.getPlayer());
         }
 

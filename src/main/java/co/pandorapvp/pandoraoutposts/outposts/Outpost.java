@@ -12,7 +12,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class Outpost {
 
@@ -34,41 +34,72 @@ public class Outpost {
 
     /**
      * Checks if the members inside the outpost region are all part of the same function
+     *
      * @return false if everyone is in the same faction. True if there is at least one person not in the same faction.
      * This will ignore people who are not in a faction. If the only person in the outpost is not in a faction, this will return true to ignore them.
      */
-    public boolean doesOutpostContainDiffFactionMembers(){
-        final Map<UUID, Player> players = this.getPlayers();
-        System.out.println("players = " + players);
-        final Player firstPlayer = players.values().iterator().next();
+    public boolean doesOutpostContainDiffFactionMembers() {
         final FPlayers instance = FPlayers.getInstance();
-        final String factionName = instance.getByPlayer(firstPlayer).getFaction().getId();
-        return players.values().stream().anyMatch(player -> {
+        final List<Player> players = this.getPlayers().values().stream()//filter out players without a faction
+                .filter(player -> instance.getByPlayer(player).hasFaction()).collect(Collectors.toList());
+
+        if (players.size() == 0) return true;//if nobody in here it's not valid
+
+        final Player firstPlayer = players.get(0);
+        final FPlayer firstFacPlayer = instance.getByPlayer(firstPlayer);
+
+        final String factionName = firstFacPlayer.getFaction().getId();
+        return players.stream().allMatch(player -> {
             final FPlayer fPlayer = instance.getByPlayer(player);
-            if(players.size() == 1 && !fPlayer.hasFaction()) return true;
-            else if(!fPlayer.hasFaction()) return false;
+            if (!fPlayer.hasFaction()) return false;
             final String fName = fPlayer.getFaction().getId();
             return !fName.equals(factionName);
         });
     }
 
-    public void startNeutralCountdown(){
+    public void startNextCountdown() {
 
-        if(this.doesOutpostContainDiffFactionMembers()) return;
+        switch (this.state) {
+            case CLAIMED:
+                this.startNeutralCountdown();
+                break;
+            case NEUTRAL:
+                this.startClaimedCountdown();
+        }
+
+    }
+
+    public void startClaimedCountdown() {
+
+        if (this.doesOutpostContainDiffFactionMembers()) return;
 
         final StageTimer stageTimer = new StageTimer(this);
         final Timer timer = new Timer();
         this.runningTimer = timer;
-        timer.schedule(stageTimer, durationTillNeutral*100);
+        timer.schedule(stageTimer, durationTillNotNeutral * 100);
 
     }
 
-    private void setFactionClaimed(){
+    /**
+     * Will start a countdown to go to neutral if the requirements are met to do so - everyone in region has same faction
+     */
+    public void startNeutralCountdown() {
+
+        if (this.doesOutpostContainDiffFactionMembers()) return;
+
+        final StageTimer stageTimer = new StageTimer(this);
+        final Timer timer = new Timer();
+        this.runningTimer = timer;
+        timer.schedule(stageTimer, durationTillNeutral * 100);
+
+    }
+
+    private void setFactionClaimed() {
         final Map<UUID, Player> players = this.getPlayers();
-        if(players.isEmpty()) return;
+        if (players.isEmpty()) return;
 
         final UUID firstUUID = players.keySet().iterator().next();
-        if(firstUUID == null) return;
+        if (firstUUID == null) return;
 
         final Player player = players.get(firstUUID);
         final FPlayer fPlayer = FPlayers.getInstance().getByPlayer(player);
@@ -76,7 +107,7 @@ public class Outpost {
         this.setState(OutpostStage.CLAIMED);
     }
 
-    public void nextStage(){
+    public void nextStage() {
         switch (this.state) {
             case NEUTRAL:
                 this.setFactionClaimed();
@@ -99,15 +130,15 @@ public class Outpost {
         return bossBar;
     }
 
-    public Map<UUID, Player> getPlayers(){
+    public Map<UUID, Player> getPlayers() {
         return this.bossBar.getPlayers();
     }
 
-    public static Outpost get(String regionName, World world){
+    public static Outpost get(String regionName, World world) {
         final Outpost outpost = outposts.get(regionName);
-        if(outpost != null){
+        if (outpost != null) {
             return outpost;
-        }else {
+        } else {
             final Map<String, BossBar> bossBarMap = BossBarManager.getBossBarMap();
             final ProtectedRegion region = plugin.worldGuardPlugin.getRegionManager(world).getRegion(regionName);
             if (ProtectedRegion.isValidId(regionName) && region != null) {
