@@ -87,7 +87,6 @@ public class Outpost {
             case CLAIMED:
                 System.out.println(fPlayer.getFaction().getId() + " " + this.factionClaimed.getId());
                 if (fPlayer.hasFaction() && !fPlayer.getFaction().getId().equals(this.factionClaimed.getId())) {
-                    System.out.println(6);
                     this.startNeutralCountdown();
                 }
                 break;
@@ -112,10 +111,7 @@ public class Outpost {
      */
     public void startNeutralCountdown() {
 
-        System.out.println("this.getPlayers() = " + this.getPlayers());
-        final boolean b = this.doesOutpostContainDiffFactionMembers();
-        System.out.println("b = " + b);
-        if (b) return;
+        if (this.doesOutpostContainDiffFactionMembers()) return;
 
         final StageTimer stageTimer = new StageTimer(this);
         final Timer timer = new Timer();
@@ -126,11 +122,9 @@ public class Outpost {
 
     private void setFactionClaimed() {
         final Map<UUID, Player> players = this.getPlayers();
-        System.out.println(players);
         if (players.isEmpty()) return;
 
         final UUID firstUUID = players.keySet().iterator().next();
-        System.out.println(firstUUID);
         if (firstUUID == null) return;
 
         final Player player = players.get(firstUUID);
@@ -147,6 +141,7 @@ public class Outpost {
             case CLAIMED:
                 this.factionClaimed = null;
                 this.setState(OutpostStage.NEUTRAL);
+                this.startClaimedCountdown();
         }
     }
 
