@@ -1,6 +1,6 @@
 {
   "durations":{
-    "tillNeutral": 30,
-    "tillNotNeutral": 30
-  },
+    "tillNeutral": 3,
+    "tillNotNeutral": 3
+  }
 }

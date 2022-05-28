@@ -23,7 +23,7 @@ public class Outpost {
     private final ProtectedRegion region;
     private final BossBar bossBar;
     private OutpostStage state = OutpostStage.NEUTRAL;
-    private Timer runningTimer;
+    private StageTimer runningTimer;
     private Faction factionClaimed;
 
     public Outpost(ProtectedRegion region) {
@@ -42,7 +42,7 @@ public class Outpost {
         final FPlayers instance = FPlayers.getInstance();
         final List<Player> players = this.getPlayersInFaction();
 
-        if (players.size() == 0) return true;//if nobody in here it's not valid
+        if (players.size() == 0) return true;//if nobody in here it's not valid to continue
         final Player firstPlayer = players.get(0);
         final FPlayer firstFacPlayer = instance.getByPlayer(firstPlayer);
 
@@ -114,10 +114,9 @@ public class Outpost {
     private void startClaimedCountdown() {
 
         if (this.doesOutpostContainDiffFactionMembers()) return;
-        final StageTimer stageTimer = new StageTimer(this);
-        final Timer timer = new Timer();
-        this.runningTimer = timer;
-        timer.schedule(stageTimer, durationTillNotNeutral * 100);
+        final StageTimer stageTimer = new StageTimer(this, durationTillNotNeutral);
+        this.runningTimer = stageTimer;
+        stageTimer.runTaskTimerAsynchronously(plugin, 20, 20);
 
     }
 
@@ -128,10 +127,9 @@ public class Outpost {
 
         if (this.doesOutpostContainDiffFactionMembers()) return;
 
-        final StageTimer stageTimer = new StageTimer(this);
-        final Timer timer = new Timer();
-        this.runningTimer = timer;
-        timer.schedule(stageTimer, durationTillNeutral * 100);
+        final StageTimer stageTimer = new StageTimer(this, durationTillNeutral);
+        this.runningTimer = stageTimer;
+        stageTimer.runTaskTimerAsynchronously(plugin, 20, 20);
 
     }
 
@@ -163,7 +161,7 @@ public class Outpost {
 
     private void setState(OutpostStage state) {
         final Faction factionClaimed = this.factionClaimed;
-        this.bossBar.updateText(state.type + " Faction: " + (factionClaimed != null ? factionClaimed.getTag() : "None"));
+        this.bossBar.updateText(state.type +  (factionClaimed != null ? "Faction: " + factionClaimed.getTag() : ""));
         this.state = state;
     }
 
@@ -176,6 +174,10 @@ public class Outpost {
 
     public Map<UUID, Player> getPlayers() {
         return this.bossBar.getPlayers();
+    }
+
+    public BossBar getBossBar() {
+        return bossBar;
     }
 
     public static Outpost get(String regionName, World world) {
