@@ -12,7 +12,7 @@ public class BossBarManager {
 
     public static BossBar createNewBar(String regionName, Location loc, float healthPercent, String text){
         if(bossBarMap.containsKey(regionName))
-            throw new KeyAlreadyExistsException(regionName + " already has a dragon assigned to it");
+            return bossBarMap.get(regionName);
         final BossBar bar = new BossBar(regionName, loc, healthPercent, text);
         bossBarMap.put(regionName, bar);
         return bar;

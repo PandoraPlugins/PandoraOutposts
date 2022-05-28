@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
+import java.util.Map;
 
 public class RegionEvents implements Listener {
     private final PandoraOutposts outposts = PandoraOutposts.getPlugin(PandoraOutposts.class);
@@ -33,28 +33,22 @@ public class RegionEvents implements Listener {
             final String name = region.getId();
             final World world = player.getWorld();
 
-            if (BossBarManager.getBossBarMap().containsKey(name)) {
-                final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
-                System.out.println(1);
+            final Map<String, BossBar> bossBarMap = BossBarManager.getBossBarMap();
+
+            if (bossBarMap.containsKey(name)) {
+                final BossBar bossBar = bossBarMap.get(name);
                 bossBar.addPlayerToBar(player);
             } else {
-                try {
-                    System.out.println(2);
-                    final Location centerOfRegion = getCenterOfRegion(region, world).subtract(0, 100, 0);
-                    final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 2");
-                    newBar.addPlayerToBar(player);
-                } catch (KeyAlreadyExistsException err) {//key exists for the boss bar already existing
-                    final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
-                    System.out.println(3);
-                    bossBar.addPlayerToBar(player);
-                }
+                final Location centerOfRegion = getCenterOfRegion(region, world).subtract(0, 100, 0);
+                final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Neutral");
+                newBar.addPlayerToBar(player);
             }
 
             final boolean playerInFaction = FPlayers.getInstance().getByPlayer(player).hasFaction();
             if (!playerInFaction) return;
             final Outpost outpost = Outpost.get(name, world);
             if (outpost != null) {
-                outpost.startNextCountdown();
+                outpost.startNextCountdown(player);
             }
 
         }
@@ -67,12 +61,18 @@ public class RegionEvents implements Listener {
 
         if (outpostType != null) {
             final String name = region.getId();
-            final World world = event.getPlayer().getWorld();
+            final Player player = event.getPlayer();
+            final World world = player.getWorld();
+
+            BossBarManager.getBossBarMap().get(name).removeBarForPlayer(player);
             final Outpost outpost = Outpost.get(name, world);
-            if (outpost != null && outpost.getPlayers().size() > 0) {
-                outpost.startNextCountdown();
+            final boolean playerInFaction = FPlayers.getInstance().getByPlayer(player).hasFaction();
+
+            if (outpost != null && outpost.getPlayers().size() > 0 && playerInFaction) {
+                System.out.println(5);
+                outpost.playerLeave(player);
+//                outpost.startNextCountdown(player);
             }
-            BossBarManager.getBossBarMap().get(name).removeBarForPlayer(event.getPlayer());
         }
 
     }

@@ -40,28 +40,56 @@ public class Outpost {
      */
     public boolean doesOutpostContainDiffFactionMembers() {
         final FPlayers instance = FPlayers.getInstance();
-        final List<Player> players = this.getPlayers().values().stream()//filter out players without a faction
-                .filter(player -> instance.getByPlayer(player).hasFaction()).collect(Collectors.toList());
+        final List<Player> players = this.getPlayersInFaction();
 
+        System.out.println("players = " + players);
         if (players.size() == 0) return true;//if nobody in here it's not valid
-
         final Player firstPlayer = players.get(0);
         final FPlayer firstFacPlayer = instance.getByPlayer(firstPlayer);
 
         final String factionName = firstFacPlayer.getFaction().getId();
-        return players.stream().allMatch(player -> {
+        System.out.println("players = " + players);
+        return !players.stream().allMatch(player -> {
             final FPlayer fPlayer = instance.getByPlayer(player);
-            if (!fPlayer.hasFaction()) return false;
+            System.out.println("fPlayer.getPlayer().getDisplayName() = " + fPlayer.getPlayer().getDisplayName());
+            if (!fPlayer.hasFaction()) return true;
             final String fName = fPlayer.getFaction().getId();
-            return !fName.equals(factionName);
+            return fName.equals(factionName);
         });
     }
 
-    public void startNextCountdown() {
+    public boolean doesContainNonClaimedMembers() {
 
+        final List<Player> playersInFaction = this.getPlayersInFaction();
+        if (playersInFaction.size() == 0) return false;
+        final FPlayers instance = FPlayers.getInstance();
+        return !playersInFaction.stream().allMatch(player -> {
+            final FPlayer byPlayer = instance.getByPlayer(player);
+            if (!byPlayer.hasFaction()) return true;
+            return byPlayer.getFaction().getId().equals(this.factionClaimed.getId());
+        });
+
+    }
+
+    public void playerLeave(Player playerLeft) {
+        final FPlayers instance = FPlayers.getInstance();
+        final FPlayer fPlayer = instance.getByPlayer(playerLeft);
+        final Faction faction = fPlayer.getFaction();
+        if (this.state == OutpostStage.CLAIMED && faction.getId().equals(this.factionClaimed.getId()) && this.doesContainNonClaimedMembers()) {
+            this.startNeutralCountdown();
+        }
+    }
+
+    public void startNextCountdown(Player playerTriggered) {
+
+        final FPlayer fPlayer = FPlayers.getInstance().getByPlayer(playerTriggered);
         switch (this.state) {
             case CLAIMED:
-                this.startNeutralCountdown();
+                System.out.println(fPlayer.getFaction().getId() + " " + this.factionClaimed.getId());
+                if (fPlayer.hasFaction() && !fPlayer.getFaction().getId().equals(this.factionClaimed.getId())) {
+                    System.out.println(6);
+                    this.startNeutralCountdown();
+                }
                 break;
             case NEUTRAL:
                 this.startClaimedCountdown();
@@ -72,7 +100,6 @@ public class Outpost {
     public void startClaimedCountdown() {
 
         if (this.doesOutpostContainDiffFactionMembers()) return;
-
         final StageTimer stageTimer = new StageTimer(this);
         final Timer timer = new Timer();
         this.runningTimer = timer;
@@ -85,7 +112,10 @@ public class Outpost {
      */
     public void startNeutralCountdown() {
 
-        if (this.doesOutpostContainDiffFactionMembers()) return;
+        System.out.println("this.getPlayers() = " + this.getPlayers());
+        final boolean b = this.doesOutpostContainDiffFactionMembers();
+        System.out.println("b = " + b);
+        if (b) return;
 
         final StageTimer stageTimer = new StageTimer(this);
         final Timer timer = new Timer();
@@ -96,9 +126,11 @@ public class Outpost {
 
     private void setFactionClaimed() {
         final Map<UUID, Player> players = this.getPlayers();
+        System.out.println(players);
         if (players.isEmpty()) return;
 
         final UUID firstUUID = players.keySet().iterator().next();
+        System.out.println(firstUUID);
         if (firstUUID == null) return;
 
         final Player player = players.get(firstUUID);
@@ -119,7 +151,8 @@ public class Outpost {
     }
 
     public void setState(OutpostStage state) {
-        this.bossBar.updateText(state.type);
+        final Faction factionClaimed = this.factionClaimed;
+        this.bossBar.updateText(state.type + " Faction: " + (factionClaimed != null ? factionClaimed.getTag() : "None"));
         this.state = state;
     }
 
@@ -129,6 +162,13 @@ public class Outpost {
 
     public BossBar getBossBar() {
         return bossBar;
+    }
+
+    public List<Player> getPlayersInFaction() {
+        final FPlayers instance = FPlayers.getInstance();
+        return this.getPlayers().values().stream()//filter out players without a faction
+                .filter(player -> instance.getByPlayer(player).hasFaction()).collect(Collectors.toList());
+
     }
 
     public Map<UUID, Player> getPlayers() {
