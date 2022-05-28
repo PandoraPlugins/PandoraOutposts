@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BossBar {
 
@@ -62,13 +63,15 @@ public class BossBar {
             PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.dragon.getId());
             this.players.remove(p.getUniqueId());
             ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
-            if (this.players.isEmpty())
-                BossBarManager.getBossBarMap().remove(this.name);
+
         }
     }
 
-    public void deleteBar() {
+    public void removeAllPlayers() {
         this.players.forEach((id, p) -> this.removeBarForPlayer(p));
+    }
+
+    public void deleteBar(){
         BossBarManager.getBossBarMap().remove(this.name);
     }
 

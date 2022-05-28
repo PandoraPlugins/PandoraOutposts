@@ -7,13 +7,12 @@ import co.pandorapvp.pandoraoutposts.types.OutpostStage;
 import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.FPlayers;
 import com.massivecraft.factions.Faction;
-import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import me.nanigans.libnanigans.Files.JsonUtil;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Outpost {
 
@@ -33,18 +32,39 @@ public class Outpost {
         outposts.put(region.getId(), this);
     }
 
+    /**
+     * Checks if the members inside the outpost region are all part of the same function
+     * @return false if everyone is in the same faction. True if there is at least one person not in the same faction.
+     * This will ignore people who are not in a faction. If the only person in the outpost is not in a faction, this will return true to ignore them.
+     */
+    public boolean doesOutpostContainDiffFactionMembers(){
+        final Map<UUID, Player> players = this.getPlayers();
+        System.out.println("players = " + players);
+        final Player firstPlayer = players.values().iterator().next();
+        final FPlayers instance = FPlayers.getInstance();
+        final String factionName = instance.getByPlayer(firstPlayer).getFaction().getId();
+        return players.values().stream().anyMatch(player -> {
+            final FPlayer fPlayer = instance.getByPlayer(player);
+            if(players.size() == 1 && !fPlayer.hasFaction()) return true;
+            else if(!fPlayer.hasFaction()) return false;
+            final String fName = fPlayer.getFaction().getId();
+            return !fName.equals(factionName);
+        });
+    }
+
     public void startNeutralCountdown(){
+
+        if(this.doesOutpostContainDiffFactionMembers()) return;
 
         final StageTimer stageTimer = new StageTimer(this);
         final Timer timer = new Timer();
         this.runningTimer = timer;
-        System.out.println("durationTillNeutral = " + durationTillNeutral);
         timer.schedule(stageTimer, durationTillNeutral*100);
 
     }
 
     private void setFactionClaimed(){
-        final Map<UUID, Player> players = this.bossBar.getPlayers();
+        final Map<UUID, Player> players = this.getPlayers();
         if(players.isEmpty()) return;
 
         final UUID firstUUID = players.keySet().iterator().next();
@@ -77,6 +97,10 @@ public class Outpost {
 
     public BossBar getBossBar() {
         return bossBar;
+    }
+
+    public Map<UUID, Player> getPlayers(){
+        return this.bossBar.getPlayers();
     }
 
     public static Outpost get(String regionName, World world){

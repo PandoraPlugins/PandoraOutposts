@@ -4,6 +4,7 @@ import co.pandorapvp.pandoraoutposts.PandoraOutposts;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBar;
 import co.pandorapvp.pandoraoutposts.bossbars.BossBarManager;
 import co.pandorapvp.pandoraoutposts.outposts.Outpost;
+import com.massivecraft.factions.FPlayers;
 import com.mewin.WGRegionEvents.events.RegionEnterEvent;
 import com.mewin.WGRegionEvents.events.RegionLeaveEvent;
 import com.sk89q.worldedit.BlockVector;
@@ -30,19 +31,23 @@ public class RegionEvents implements Listener {
 
             final Player player = event.getPlayer();
             final String name = region.getId();
+            final World world = player.getWorld();
+
             try{
-                final World world = player.getWorld();
                 final Location centerOfRegion = getCenterOfRegion(region, world).subtract(0, 100, 0);
                 final BossBar newBar = BossBarManager.createNewBar(name, centerOfRegion, 100, "Outpost 1");
                 newBar.addPlayerToBar(player);
-                final Outpost outpost = Outpost.get(name, world);
-
-                if(outpost != null)
-                    outpost.startNeutralCountdown();
-
             }catch(KeyAlreadyExistsException err){
                 final BossBar bossBar = BossBarManager.getBossBarMap().get(name);
                 bossBar.addPlayerToBar(player);
+            }
+
+            final boolean playerInFaction = FPlayers.getInstance().getByPlayer(player).hasFaction();
+            if(!playerInFaction) return;
+
+            final Outpost outpost = Outpost.get(name, world);
+            if(outpost != null){
+                outpost.startNeutralCountdown();
             }
 
         }
@@ -55,6 +60,7 @@ public class RegionEvents implements Listener {
 
         if(outpostType != null){
             final String name = region.getId();
+            System.out.println("name = " + name);
             BossBarManager.getBossBarMap().get(name).removeBarForPlayer(event.getPlayer());
         }
 
