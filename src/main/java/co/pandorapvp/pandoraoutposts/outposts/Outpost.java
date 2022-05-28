@@ -42,22 +42,24 @@ public class Outpost {
         final FPlayers instance = FPlayers.getInstance();
         final List<Player> players = this.getPlayersInFaction();
 
-        System.out.println("players = " + players);
         if (players.size() == 0) return true;//if nobody in here it's not valid
         final Player firstPlayer = players.get(0);
         final FPlayer firstFacPlayer = instance.getByPlayer(firstPlayer);
 
         final String factionName = firstFacPlayer.getFaction().getId();
-        System.out.println("players = " + players);
+
         return !players.stream().allMatch(player -> {
             final FPlayer fPlayer = instance.getByPlayer(player);
-            System.out.println("fPlayer.getPlayer().getDisplayName() = " + fPlayer.getPlayer().getDisplayName());
             if (!fPlayer.hasFaction()) return true;
             final String fName = fPlayer.getFaction().getId();
             return fName.equals(factionName);
         });
     }
 
+    /**
+     * Checks if any member inside the outpost region is not a member of the faction that has currently claimed it
+     * @return true if there is at least one person who is not in the claimed faction false if everyone is part of the claimed faction
+     */
     public boolean doesContainNonClaimedMembers() {
 
         final List<Player> playersInFaction = this.getPlayersInFaction();
@@ -109,7 +111,7 @@ public class Outpost {
 
     }
 
-    public void startClaimedCountdown() {
+    private void startClaimedCountdown() {
 
         if (this.doesOutpostContainDiffFactionMembers()) return;
         final StageTimer stageTimer = new StageTimer(this);
@@ -122,7 +124,7 @@ public class Outpost {
     /**
      * Will start a countdown to go to neutral if the requirements are met to do so - everyone in region has same faction
      */
-    public void startNeutralCountdown() {
+    private void startNeutralCountdown() {
 
         if (this.doesOutpostContainDiffFactionMembers()) return;
 
@@ -159,18 +161,10 @@ public class Outpost {
         }
     }
 
-    public void setState(OutpostStage state) {
+    private void setState(OutpostStage state) {
         final Faction factionClaimed = this.factionClaimed;
         this.bossBar.updateText(state.type + " Faction: " + (factionClaimed != null ? factionClaimed.getTag() : "None"));
         this.state = state;
-    }
-
-    public ProtectedRegion getRegion() {
-        return region;
-    }
-
-    public BossBar getBossBar() {
-        return bossBar;
     }
 
     public List<Player> getPlayersInFaction() {
@@ -189,7 +183,6 @@ public class Outpost {
         if (outpost != null) {
             return outpost;
         } else {
-            final Map<String, BossBar> bossBarMap = BossBarManager.getBossBarMap();
             final ProtectedRegion region = plugin.worldGuardPlugin.getRegionManager(world).getRegion(regionName);
             if (ProtectedRegion.isValidId(regionName) && region != null) {
                 final Outpost outpost1 = new Outpost(region);
