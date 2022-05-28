@@ -75,17 +75,30 @@ public class Outpost {
         final FPlayers instance = FPlayers.getInstance();
         final FPlayer fPlayer = instance.getByPlayer(playerLeft);
         final Faction faction = fPlayer.getFaction();
+        if(runningTimer != null && this.getPlayersInFaction().isEmpty()) {
+            runningTimer.cancel();
+            runningTimer = null;
+            return;
+        }
         if (this.state == OutpostStage.CLAIMED && faction.getId().equals(this.factionClaimed.getId()) && this.doesContainNonClaimedMembers()) {
             this.startNeutralCountdown();
         }
+
+        if(this.state == OutpostStage.NEUTRAL && !this.doesOutpostContainDiffFactionMembers()){
+            this.startClaimedCountdown();
+        }
+
     }
 
-    public void startNextCountdown(Player playerTriggered) {
+    public void playerEnter(Player playerTriggered) {
 
         final FPlayer fPlayer = FPlayers.getInstance().getByPlayer(playerTriggered);
+        if(runningTimer != null && this.doesOutpostContainDiffFactionMembers()) {
+            runningTimer.cancel();
+            runningTimer = null;
+        }
         switch (this.state) {
             case CLAIMED:
-                System.out.println(fPlayer.getFaction().getId() + " " + this.factionClaimed.getId());
                 if (fPlayer.hasFaction() && !fPlayer.getFaction().getId().equals(this.factionClaimed.getId())) {
                     this.startNeutralCountdown();
                 }
@@ -134,6 +147,7 @@ public class Outpost {
     }
 
     public void nextStage() {
+        runningTimer = null;
         switch (this.state) {
             case NEUTRAL:
                 this.setFactionClaimed();

@@ -48,7 +48,7 @@ public class RegionEvents implements Listener {
             if (!playerInFaction) return;
             final Outpost outpost = Outpost.get(name, world);
             if (outpost != null) {
-                outpost.startNextCountdown(player);
+                outpost.playerEnter(player);
             }
 
         }
@@ -69,9 +69,7 @@ public class RegionEvents implements Listener {
             final boolean playerInFaction = FPlayers.getInstance().getByPlayer(player).hasFaction();
 
             if (outpost != null && outpost.getPlayers().size() > 0 && playerInFaction) {
-                System.out.println(5);
                 outpost.playerLeave(player);
-//                outpost.startNextCountdown(player);
             }
         }
 
