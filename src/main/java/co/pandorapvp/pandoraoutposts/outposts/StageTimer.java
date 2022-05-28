@@ -1,5 +1,8 @@
 package co.pandorapvp.pandoraoutposts.outposts;
 
+import co.pandorapvp.pandoraoutposts.bossbars.BossBar;
+import co.pandorapvp.pandoraoutposts.types.OutpostStage;
+import org.bukkit.Sound;
 import org.bukkit.scheduler.BukkitRunnable;
 
 
@@ -16,19 +19,30 @@ public class StageTimer extends BukkitRunnable {
 
     @Override
     public void run() {
-        System.out.println("runTime = " + runTime);
         if(runTime > secondsToLast){
             this.cancel();
+            outpost.playSoundToPlayers(Sound.LEVEL_UP);
             this.outpost.nextStage();
         }else{
-            System.out.println("((float) runTime) / secondsToLast = " + ((float) runTime) / secondsToLast);
-            outpost.getBossBar().updateHealth( ((float) runTime / secondsToLast)*100);
+            outpost.playSoundToPlayers(Sound.CLICK);
+            if(outpost.getState() == OutpostStage.NEUTRAL)
+                outpost.getBossBar().updateHealth( ((float) runTime / secondsToLast)*100);
+            else outpost.getBossBar().updateHealth( ((float) (secondsToLast-runTime) / secondsToLast)*100);
             runTime++;
         }
     }
 
-    @Override
-    public synchronized void cancel() throws IllegalStateException {
+    /**
+     * If the countdown gets interrupted because of a player event this will reset the boss bar
+     */
+    public void reset(){
+        final BossBar bossBar = outpost.getBossBar();
+        if(outpost.getState() == OutpostStage.NEUTRAL)
+            bossBar.updateHealth(1);
+        else bossBar.updateHealth(100);
+        outpost.setState(outpost.getState());
+        outpost.playSoundToPlayers(Sound.BLAZE_DEATH);
         super.cancel();
     }
+
 }

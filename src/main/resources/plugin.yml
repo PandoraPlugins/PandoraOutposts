@@ -6,3 +6,12 @@ description: An outpost plugin for PandoraPVP
 depend:
   - WorldGuard
   - WGRegionEvents
+permissions:
+  outpost.refresh:
+    default: op
+    description: Allows user to refresh the outpost config
+commands:
+  outpostrefresh:
+    description: Refresh the outpost config after a change
+    permission: outpost.refresh
+    usage: /outpostrefresh

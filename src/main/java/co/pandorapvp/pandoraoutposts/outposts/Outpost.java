@@ -8,6 +8,7 @@ import com.massivecraft.factions.FPlayer;
 import com.massivecraft.factions.FPlayers;
 import com.massivecraft.factions.Faction;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -18,8 +19,8 @@ public class Outpost {
 
     private final static Map<String, Outpost> outposts = new HashMap<>();
     private final static PandoraOutposts plugin = PandoraOutposts.getPlugin(PandoraOutposts.class);
-    private static final long durationTillNeutral = plugin.outpostConfig.get("durations.tillNeutral");
-    private static final long durationTillNotNeutral = plugin.outpostConfig.get("durations.tillNotNeutral");
+    private static long durationTillNeutral = plugin.outpostConfig.get("durations.tillNeutral");
+    private static long durationTillNotNeutral = plugin.outpostConfig.get("durations.tillNotNeutral");
     private final ProtectedRegion region;
     private final BossBar bossBar;
     private OutpostStage state = OutpostStage.NEUTRAL;
@@ -78,7 +79,7 @@ public class Outpost {
         final FPlayer fPlayer = instance.getByPlayer(playerLeft);
         final Faction faction = fPlayer.getFaction();
         if(runningTimer != null && this.getPlayersInFaction().isEmpty()) {
-            runningTimer.cancel();
+            runningTimer.reset();
             runningTimer = null;
             return;
         }
@@ -96,7 +97,7 @@ public class Outpost {
 
         final FPlayer fPlayer = FPlayers.getInstance().getByPlayer(playerTriggered);
         if(runningTimer != null && this.doesOutpostContainDiffFactionMembers()) {
-            runningTimer.cancel();
+            runningTimer.reset();
             runningTimer = null;
         }
         switch (this.state) {
@@ -159,7 +160,7 @@ public class Outpost {
         }
     }
 
-    private void setState(OutpostStage state) {
+    public void setState(OutpostStage state) {
         final Faction factionClaimed = this.factionClaimed;
         this.bossBar.updateText(state.type +  (factionClaimed != null ? "Faction: " + factionClaimed.getTag() : ""));
         this.state = state;
@@ -170,6 +171,10 @@ public class Outpost {
         return this.getPlayers().values().stream()//filter out players without a faction
                 .filter(player -> instance.getByPlayer(player).hasFaction()).collect(Collectors.toList());
 
+    }
+
+    public void playSoundToPlayers(Sound sound){
+        getPlayers().forEach((ignored,player) -> player.playSound(player.getLocation(), sound, 1f, 1f));
     }
 
     public Map<UUID, Player> getPlayers() {
@@ -193,5 +198,17 @@ public class Outpost {
             }
         }
         return null;
+    }
+
+    public OutpostStage getState() {
+        return state;
+    }
+
+    public static void setDurationTillNeutral(long durationTillNeutral) {
+        Outpost.durationTillNeutral = durationTillNeutral;
+    }
+
+    public static void setDurationTillNotNeutral(long durationTillNotNeutral) {
+        Outpost.durationTillNotNeutral = durationTillNotNeutral;
     }
 }

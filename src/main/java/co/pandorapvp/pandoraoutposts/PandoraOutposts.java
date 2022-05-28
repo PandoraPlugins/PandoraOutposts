@@ -1,5 +1,6 @@
 package co.pandorapvp.pandoraoutposts;
 
+import co.pandorapvp.pandoraoutposts.commands.RefreshConfig;
 import co.pandorapvp.pandoraoutposts.events.RegionEvents;
 import co.pandorapvp.pandoraoutposts.types.OutpostTypes;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -31,6 +32,7 @@ public final class PandoraOutposts extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         this.getServer().getPluginManager().registerEvents(new RegionEvents(), this);
+        this.getCommand("outpostrefresh").setExecutor(new RefreshConfig());
         try {
             YamlGenerator.createFolder(this, "Outposts");
         } catch (IOException e) {
