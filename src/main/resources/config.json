@@ -2,5 +2,9 @@
   "durations":{
     "tillNeutral": 3,
     "tillNotNeutral": 3
+  },
+  "sounds": {
+    "nextStage": "LEVEL_UP",
+    "claimFail": "BLAZE_DEATH"
   }
 }

@@ -24,7 +24,7 @@ public class StageTimer extends BukkitRunnable {
             outpost.playSoundToPlayers(Sound.LEVEL_UP);
             this.outpost.nextStage();
         }else{
-            outpost.playSoundToPlayers(Sound.CLICK);
+            outpost.playSoundToPlayers(Sound.CLICK);//todo: config the sounds
             if(outpost.getState() == OutpostStage.NEUTRAL)
                 outpost.getBossBar().updateHealth( ((float) runTime / secondsToLast)*100);
             else outpost.getBossBar().updateHealth( ((float) (secondsToLast-runTime) / secondsToLast)*100);
